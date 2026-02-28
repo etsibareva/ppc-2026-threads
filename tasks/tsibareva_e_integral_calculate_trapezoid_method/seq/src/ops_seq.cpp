@@ -27,37 +27,30 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodSEQ::RunImpl() {
   const auto &input = GetInput();
   int dim = input.dimension;
 
-  // Вычисляем шаги по каждому измерению
   std::vector<double> h(dim);
-  for (int idx = 0; idx < dim; ++idx) {  // Fix: rename loop variable
-    h[idx] = (input.upper_bounds[idx] - input.lower_bounds[idx]) / input.num_steps[idx];
+  for (int i = 0; i < dim; ++i) {
+    h[i] = (input.upper_bounds[i] - input.lower_bounds[i]) / input.num_steps[i];
   }
 
-  // Индексы текущей точки
   std::vector<int> indices(dim, 0);
   double sum = 0.0;
 
-  // Перебор всех узлов сетки
   while (true) {
-    // Формируем точку
     std::vector<double> point(dim);
-    for (int idx = 0; idx < dim; ++idx) {                            // Fix: rename loop variable
-      point[idx] = input.lower_bounds[idx] + indices[idx] * h[idx];  // Fix: add parentheses
+    for (int i = 0; i < dim; ++i) {
+      point[i] = input.lower_bounds[i] + (indices[i] * h[i]);
     }
 
-    // Вычисляем вес для метода трапеций
     int boundary_count = 0;
-    for (int idx = 0; idx < dim; ++idx) {  // Fix: rename loop variable
-      if (indices[idx] == 0 || indices[idx] == input.num_steps[idx]) {
+    for (int i = 0; i < dim; ++i) {
+      if (indices[i] == 0 || indices[i] == input.num_steps[i]) {
         ++boundary_count;
       }
     }
 
-    // Вес = 0.5 для каждой граничной координаты
     double weight = (boundary_count == 0) ? 1.0 : std::pow(0.5, boundary_count);
     sum += weight * input.function(point);
 
-    // Переход к следующей точке
     int idx = dim - 1;
     while (idx >= 0) {
       if (++indices[idx] <= input.num_steps[idx]) {
@@ -71,10 +64,9 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodSEQ::RunImpl() {
     }
   }
 
-  // Умножаем на произведение шагов
   double product_of_steps = 1.0;
-  for (int idx = 0; idx < dim; ++idx) {  // Fix: rename loop variable
-    product_of_steps *= h[idx];
+  for (int i = 0; i < dim; ++i) {
+    product_of_steps *= h[i];
   }
 
   GetOutput() = sum * product_of_steps;

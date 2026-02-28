@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cmath>
+#include <cstdint>
 #include <functional>
 #include <string>
 #include <tuple>
@@ -10,8 +10,8 @@
 
 namespace tsibareva_e_integral_calculate_trapezoid_method {
 
-enum class IntegralTestType : std::uint8_t {  // Fix: specify base type
-  kSuccessSimple2D,                           // Fix: rename enum constants
+enum class IntegralTestType : std::uint8_t {
+  kSuccessSimple2D,
   kSuccessConstant2D,
   kSuccessSimple3D,
   kSuccessConstant3D,
@@ -25,7 +25,7 @@ struct IntegralInput {
   std::vector<double> upper_bounds;
   std::vector<int> num_steps;
   std::function<double(const std::vector<double> &)> function;
-  int dimension{0};  // Fix: initialize dimension
+  int dimension{0};
 };
 
 using InType = IntegralInput;
@@ -42,9 +42,7 @@ inline IntegralInput GenerateIntegralInput(IntegralTestType type) {
       input.lower_bounds = {0.0, 0.0};
       input.upper_bounds = {1.0, 1.0};
       input.num_steps = {100, 100};
-      input.function = [](const std::vector<double> &x) {
-        return (x[0] * x[0]) + (x[1] * x[1]);
-      };  // Fix: add parentheses
+      input.function = [](const std::vector<double> &x) { return (x[0] * x[0]) + (x[1] * x[1]); };
       break;
     }
     case IntegralTestType::kSuccessConstant2D: {

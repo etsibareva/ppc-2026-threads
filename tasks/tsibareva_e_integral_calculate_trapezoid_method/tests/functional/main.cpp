@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <array>
-#include <cmath>  // Fix: add include for std::fabs
+#include <cmath>
 #include <cstddef>
 #include <string>
 #include <tuple>
@@ -38,8 +38,8 @@ class TsibarevaERunFuncTestsThreads : public ppc::util::BaseRunFuncTests<InType,
   }
 
  private:
-  InType input_data_{};       // Fix: initialize
-  double expected_output_{};  // Fix: initialize
+  InType input_data_{};
+  double expected_output_{};
 };
 
 namespace {
