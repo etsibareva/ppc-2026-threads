@@ -3,6 +3,7 @@
 #include <cmath>
 #include <vector>
 
+#include "task/include/task.hpp"
 #include "tsibareva_e_integral_calculate_trapezoid_method/common/include/common.hpp"
 
 namespace tsibareva_e_integral_calculate_trapezoid_method {
@@ -23,6 +24,42 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodSEQ::PreProcessingImpl() {
   return true;
 }
 
+std::vector<double> TsibarevaEIntegralCalculateTrapezoidMethodSEQ::ComputePoint(const std::vector<int> &indices,
+                                                                                const std::vector<double> &h,
+                                                                                int dim) const {
+  const auto &input = GetInput();
+  std::vector<double> point(dim);
+  for (int i = 0; i < dim; ++i) {
+    point[i] = input.lower_bounds[i] + (indices[i] * h[i]);
+  }
+  return point;
+}
+
+int TsibarevaEIntegralCalculateTrapezoidMethodSEQ::ComputeBoundaryCount(const std::vector<int> &indices,
+                                                                        int dim) const {
+  const auto &input = GetInput();
+  int count = 0;
+  for (int i = 0; i < dim; ++i) {
+    if (indices[i] == 0 || indices[i] == input.num_steps[i]) {
+      ++count;
+    }
+  }
+  return count;
+}
+
+bool TsibarevaEIntegralCalculateTrapezoidMethodSEQ::AdvanceIndices(std::vector<int> &indices, int dim) const {
+  const auto &input = GetInput();
+  int position = dim - 1;
+  while (position >= 0) {
+    if (++indices[position] <= input.num_steps[position]) {
+      return true;
+    }
+    indices[position] = 0;
+    --position;
+  }
+  return false;
+}
+
 bool TsibarevaEIntegralCalculateTrapezoidMethodSEQ::RunImpl() {
   const auto &input = GetInput();
   int dim = input.dimension;
@@ -36,30 +73,13 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodSEQ::RunImpl() {
   double sum = 0.0;
 
   while (true) {
-    std::vector<double> point(dim);
-    for (int i = 0; i < dim; ++i) {
-      point[i] = input.lower_bounds[i] + (indices[i] * h[i]);
-    }
-
-    int boundary_count = 0;
-    for (int i = 0; i < dim; ++i) {
-      if (indices[i] == 0 || indices[i] == input.num_steps[i]) {
-        ++boundary_count;
-      }
-    }
+    std::vector<double> point = ComputePoint(indices, h, dim);
+    int boundary_count = ComputeBoundaryCount(indices, dim);
 
     double weight = (boundary_count == 0) ? 1.0 : std::pow(0.5, boundary_count);
     sum += weight * input.function(point);
 
-    int idx = dim - 1;
-    while (idx >= 0) {
-      if (++indices[idx] <= input.num_steps[idx]) {
-        break;
-      }
-      indices[idx] = 0;
-      --idx;
-    }
-    if (idx < 0) {
+    if (!AdvanceIndices(indices, dim)) {
       break;
     }
   }
