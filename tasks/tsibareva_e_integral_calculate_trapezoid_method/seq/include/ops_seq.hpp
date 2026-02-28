@@ -10,7 +10,7 @@ class TsibarevaEIntegralCalculateTrapezoidMethodSEQ : public ppc::task::Task<Int
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kSEQ;
   }
-  TsibarevaEIntegralCalculateTrapezoidMethodSEQ(const InType &in);
+  explicit TsibarevaEIntegralCalculateTrapezoidMethodSEQ(const InType &in);  // Fix: add explicit
 
  private:
   bool ValidationImpl() override;

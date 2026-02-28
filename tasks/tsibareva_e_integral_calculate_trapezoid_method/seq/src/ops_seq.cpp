@@ -1,8 +1,6 @@
 #include "tsibareva_e_integral_calculate_trapezoid_method/seq/include/ops_seq.hpp"
 
 #include <cmath>
-#include <functional>
-#include <stdexcept>
 #include <vector>
 
 #include "tsibareva_e_integral_calculate_trapezoid_method/common/include/common.hpp"
@@ -31,8 +29,8 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodSEQ::RunImpl() {
 
   // Вычисляем шаги по каждому измерению
   std::vector<double> h(dim);
-  for (int d = 0; d < dim; ++d) {
-    h[d] = (input.upper_bounds[d] - input.lower_bounds[d]) / input.num_steps[d];
+  for (int idx = 0; idx < dim; ++idx) {  // Fix: rename loop variable
+    h[idx] = (input.upper_bounds[idx] - input.lower_bounds[idx]) / input.num_steps[idx];
   }
 
   // Индексы текущей точки
@@ -43,14 +41,14 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodSEQ::RunImpl() {
   while (true) {
     // Формируем точку
     std::vector<double> point(dim);
-    for (int d = 0; d < dim; ++d) {
-      point[d] = input.lower_bounds[d] + indices[d] * h[d];
+    for (int idx = 0; idx < dim; ++idx) {                            // Fix: rename loop variable
+      point[idx] = input.lower_bounds[idx] + indices[idx] * h[idx];  // Fix: add parentheses
     }
 
     // Вычисляем вес для метода трапеций
     int boundary_count = 0;
-    for (int d = 0; d < dim; ++d) {
-      if (indices[d] == 0 || indices[d] == input.num_steps[d]) {
+    for (int idx = 0; idx < dim; ++idx) {  // Fix: rename loop variable
+      if (indices[idx] == 0 || indices[idx] == input.num_steps[idx]) {
         ++boundary_count;
       }
     }
@@ -60,23 +58,23 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodSEQ::RunImpl() {
     sum += weight * input.function(point);
 
     // Переход к следующей точке
-    int d = dim - 1;
-    while (d >= 0) {
-      if (++indices[d] <= input.num_steps[d]) {
+    int idx = dim - 1;
+    while (idx >= 0) {
+      if (++indices[idx] <= input.num_steps[idx]) {
         break;
       }
-      indices[d] = 0;
-      --d;
+      indices[idx] = 0;
+      --idx;
     }
-    if (d < 0) {
+    if (idx < 0) {
       break;
     }
   }
 
   // Умножаем на произведение шагов
   double product_of_steps = 1.0;
-  for (int d = 0; d < dim; ++d) {
-    product_of_steps *= h[d];
+  for (int idx = 0; idx < dim; ++idx) {  // Fix: rename loop variable
+    product_of_steps *= h[idx];
   }
 
   GetOutput() = sum * product_of_steps;
