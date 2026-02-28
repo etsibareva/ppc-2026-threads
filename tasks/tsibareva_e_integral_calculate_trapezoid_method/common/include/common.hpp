@@ -21,11 +21,11 @@ enum class IntegralTestType : std::uint8_t {
 };
 
 struct Integral {
-    std::vector<double> lo;
-    std::vector<double> hi;
-    std::vector<int> steps;
-    std::function<double(const std::vector<double>&)> f;
-    int dim{0};
+  std::vector<double> lo;
+  std::vector<double> hi;
+  std::vector<int> steps;
+  std::function<double(const std::vector<double> &)> f;
+  int dim{0};
 };
 
 using InType = Integral;
@@ -42,7 +42,7 @@ inline Integral GenerateIntegralInput(IntegralTestType type) {
       input.lo = {0.0, 0.0};
       input.hi = {1.0, 1.0};
       input.steps = {100, 100};
-      input.f = [](const std::vector<double> &x) { return (x[0] * x[0]) + (x[1] * x[1]); }; // x^2 + y^2
+      input.f = [](const std::vector<double> &x) { return (x[0] * x[0]) + (x[1] * x[1]); };  // x^2 + y^2
       break;
     }
     case IntegralTestType::kSuccessConstant2D: {
@@ -50,7 +50,7 @@ inline Integral GenerateIntegralInput(IntegralTestType type) {
       input.lo = {0.0, 0.0};
       input.hi = {2.0, 3.0};
       input.steps = {50, 50};
-      input.f = [](const std::vector<double> &) { return 5.0; }; // const
+      input.f = [](const std::vector<double> &) { return 5.0; };  // const
       break;
     }
     case IntegralTestType::kSuccessSimple3D: {
@@ -58,7 +58,7 @@ inline Integral GenerateIntegralInput(IntegralTestType type) {
       input.lo = {0.0, 0.0, 0.0};
       input.hi = {1.0, 1.0, 1.0};
       input.steps = {50, 50, 50};
-      input.f = [](const std::vector<double> &x) { return x[0] + x[1] + x[2]; }; // x + y + z
+      input.f = [](const std::vector<double> &x) { return x[0] + x[1] + x[2]; };  // x + y + z
       break;
     }
     case IntegralTestType::kSuccessConstant3D: {

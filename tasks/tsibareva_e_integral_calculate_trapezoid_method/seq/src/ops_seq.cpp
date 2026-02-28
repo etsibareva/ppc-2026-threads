@@ -59,7 +59,7 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodSEQ::RunImpl() {
 
   while (true) {
     std::vector<double> point = ComputePoint(indexes, h, dim);
-    
+
     int boundary_count = 0;
     for (int i = 0; i < dim; ++i) {
       if (indexes[i] == 0 || indexes[i] == GetInput().steps[i]) {
