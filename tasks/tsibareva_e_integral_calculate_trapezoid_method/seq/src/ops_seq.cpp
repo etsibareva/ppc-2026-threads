@@ -25,8 +25,7 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodSEQ::PreProcessingImpl() {
 }
 
 std::vector<double> TsibarevaEIntegralCalculateTrapezoidMethodSEQ::ComputePoint(const std::vector<int> &indices,
-                                                                                const std::vector<double> &h,
-                                                                                int dim) const {
+                                                                                const std::vector<double> &h, int dim) {
   const auto &input = GetInput();
   std::vector<double> point(dim);
   for (int i = 0; i < dim; ++i) {
@@ -35,8 +34,7 @@ std::vector<double> TsibarevaEIntegralCalculateTrapezoidMethodSEQ::ComputePoint(
   return point;
 }
 
-int TsibarevaEIntegralCalculateTrapezoidMethodSEQ::ComputeBoundaryCount(const std::vector<int> &indices,
-                                                                        int dim) const {
+int TsibarevaEIntegralCalculateTrapezoidMethodSEQ::ComputeBoundaryCount(const std::vector<int> &indices, int dim) {
   const auto &input = GetInput();
   int count = 0;
   for (int i = 0; i < dim; ++i) {
@@ -47,7 +45,7 @@ int TsibarevaEIntegralCalculateTrapezoidMethodSEQ::ComputeBoundaryCount(const st
   return count;
 }
 
-bool TsibarevaEIntegralCalculateTrapezoidMethodSEQ::AdvanceIndices(std::vector<int> &indices, int dim) const {
+bool TsibarevaEIntegralCalculateTrapezoidMethodSEQ::AdvanceIndices(std::vector<int> &indices, int dim) {
   const auto &input = GetInput();
   int position = dim - 1;
   while (position >= 0) {
