@@ -20,8 +20,8 @@ class TsibarevaEIntegralCalculateTrapezoidMethodSEQ : public ppc::task::Task<Int
   bool RunImpl() override;
   bool PostProcessingImpl() override;
 
-  std::vector<double> ComputePoint(const std::vector<int> &indices, const std::vector<double> &h, int dim);
-  bool IterateGridPoints(std::vector<int> &indices, int dim);
+  std::vector<double> ComputePoint(const std::vector<int> &indexes, const std::vector<double> &h, int dim);
+  bool IterateGridPoints(std::vector<int> &indexes, int dim);
 };
 
 }  // namespace tsibareva_e_integral_calculate_trapezoid_method
