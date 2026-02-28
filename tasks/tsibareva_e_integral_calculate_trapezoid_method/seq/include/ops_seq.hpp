@@ -7,7 +7,7 @@
 
 namespace tsibareva_e_integral_calculate_trapezoid_method {
 
-class TsibarevaEIntegralCalculateTrapezoidMethodSEQ : public ppc::task::Task<IntegralInput, double> {
+class TsibarevaEIntegralCalculateTrapezoidMethodSEQ : public ppc::task::Task<Integral, double> {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kSEQ;
@@ -21,10 +21,7 @@ class TsibarevaEIntegralCalculateTrapezoidMethodSEQ : public ppc::task::Task<Int
   bool PostProcessingImpl() override;
 
   std::vector<double> ComputePoint(const std::vector<int> &indices, const std::vector<double> &h, int dim);
-
-  int ComputeBoundaryCount(const std::vector<int> &indices, int dim);
-
-  bool AdvanceIndices(std::vector<int> &indices, int dim);
+  bool IterateGridPoints(std::vector<int> &indices, int dim);
 };
 
 }  // namespace tsibareva_e_integral_calculate_trapezoid_method

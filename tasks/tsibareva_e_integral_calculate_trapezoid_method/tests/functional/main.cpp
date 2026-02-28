@@ -29,8 +29,8 @@ class TsibarevaERunFuncTestsThreads : public ppc::util::BaseRunFuncTests<InType,
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    double tolerance = 1e-4;
-    return std::fabs(output_data - expected_output_) < tolerance;
+    double d = 0.0001;
+    return std::fabs(output_data - expected_output_) < d;
   }
 
   InType GetTestInputData() final {

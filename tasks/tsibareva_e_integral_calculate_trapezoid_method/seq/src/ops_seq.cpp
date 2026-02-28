@@ -8,8 +8,8 @@
 
 namespace tsibareva_e_integral_calculate_trapezoid_method {
 
-TsibarevaEIntegralCalculateTrapezoidMethodSEQ::TsibarevaEIntegralCalculateTrapezoidMethodSEQ(const IntegralInput &in)
-    : ppc::task::Task<IntegralInput, double>() {
+TsibarevaEIntegralCalculateTrapezoidMethodSEQ::TsibarevaEIntegralCalculateTrapezoidMethodSEQ(const Integral &in)
+    : ppc::task::Task<Integral, double>() {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   GetOutput() = 0.0;
@@ -24,70 +24,63 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodSEQ::PreProcessingImpl() {
   return true;
 }
 
-std::vector<double> TsibarevaEIntegralCalculateTrapezoidMethodSEQ::ComputePoint(const std::vector<int> &indices,
+std::vector<double> TsibarevaEIntegralCalculateTrapezoidMethodSEQ::ComputePoint(const std::vector<int> &indexes,
                                                                                 const std::vector<double> &h, int dim) {
-  const auto &input = GetInput();
   std::vector<double> point(dim);
   for (int i = 0; i < dim; ++i) {
-    point[i] = input.lower_bounds[i] + (indices[i] * h[i]);
+    point[i] = GetInput().lo[i] + (indexes[i] * h[i]);
   }
   return point;
 }
 
-int TsibarevaEIntegralCalculateTrapezoidMethodSEQ::ComputeBoundaryCount(const std::vector<int> &indices, int dim) {
-  const auto &input = GetInput();
-  int count = 0;
-  for (int i = 0; i < dim; ++i) {
-    if (indices[i] == 0 || indices[i] == input.num_steps[i]) {
-      ++count;
-    }
-  }
-  return count;
-}
-
-bool TsibarevaEIntegralCalculateTrapezoidMethodSEQ::AdvanceIndices(std::vector<int> &indices, int dim) {
-  const auto &input = GetInput();
+bool TsibarevaEIntegralCalculateTrapezoidMethodSEQ::IterateGridPoints(std::vector<int> &indexes, int dim) {
   int position = dim - 1;
   while (position >= 0) {
-    if (++indices[position] <= input.num_steps[position]) {
+    indexes[position]++;
+    if (indexes[position] <= GetInput().steps[position]) {
       return true;
     }
-    indices[position] = 0;
-    --position;
+    indexes[position] = 0;
+    position--;
   }
   return false;
 }
 
 bool TsibarevaEIntegralCalculateTrapezoidMethodSEQ::RunImpl() {
-  const auto &input = GetInput();
-  int dim = input.dimension;
+  int dim = GetInput().dim;
 
   std::vector<double> h(dim);
   for (int i = 0; i < dim; ++i) {
-    h[i] = (input.upper_bounds[i] - input.lower_bounds[i]) / input.num_steps[i];
+    h[i] = (GetInput().hi[i] - GetInput().lo[i]) / GetInput().steps[i];
   }
 
-  std::vector<int> indices(dim, 0);
+  std::vector<int> indexes(dim, 0);
   double sum = 0.0;
 
   while (true) {
-    std::vector<double> point = ComputePoint(indices, h, dim);
-    int boundary_count = ComputeBoundaryCount(indices, dim);
+    std::vector<double> point = ComputePoint(indexes, h, dim);
+    
+    int boundary_count = 0;
+    for (int i = 0; i < dim; ++i) {
+      if (indexes[i] == 0 || indexes[i] == GetInput().steps[i]) {
+        boundary_count++;
+      }
+    }
 
     double weight = (boundary_count == 0) ? 1.0 : std::pow(0.5, boundary_count);
-    sum += weight * input.function(point);
+    sum += weight * GetInput().f(point);
 
-    if (!AdvanceIndices(indices, dim)) {
+    if (!IterateGridPoints(indexes, dim)) {
       break;
     }
   }
 
-  double product_of_steps = 1.0;
+  double res_h = 1.0;
   for (int i = 0; i < dim; ++i) {
-    product_of_steps *= h[i];
+    res_h *= h[i];
   }
 
-  GetOutput() = sum * product_of_steps;
+  GetOutput() = sum * res_h;
 
   return true;
 }

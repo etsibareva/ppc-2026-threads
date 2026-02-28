@@ -9,23 +9,23 @@
 
 namespace tsibareva_e_integral_calculate_trapezoid_method {
 
-class TsibarevaERunPerfTestThreads : public ppc::util::BaseRunPerfTests<InType, OutType> {
-  InType input_data_{};
+class TsibarevaERunPerfTestThreads : public ppc::util::BaseRunPerfTests<Integral, double> {
+  Integral input_data_{};
 
   void SetUp() override {
-    input_data_.dimension = 3;
-    input_data_.lower_bounds = {0.0, 0.0, 0.0};
-    input_data_.upper_bounds = {1.0, 1.0, 1.0};
-    input_data_.num_steps = {200, 200, 200};
-    input_data_.function = [](const std::vector<double> &x) { return (x[0] * x[0]) + (x[1] * x[1]) + (x[2] * x[2]); };
+    input_data_.dim = 3;
+    input_data_.lo = {0.0, 0.0, 0.0};
+    input_data_.hi = {1.0, 1.0, 1.0};
+    input_data_.steps = {300, 300, 300};
+    input_data_.f = [](const std::vector<double> &x) { return (x[0] * x[0]) + (x[1] * x[1]) + (x[2] * x[2]); };
   }
 
-  bool CheckTestOutputData(OutType &output_data) final {
+  bool CheckTestOutputData(double &output_data) final {
     double expected = 1.0;
     return std::fabs(output_data - expected) < 1e-4;
   }
 
-  InType GetTestInputData() final {
+  Integral GetTestInputData() final {
     return input_data_;
   }
 };
@@ -36,7 +36,7 @@ TEST_P(TsibarevaERunPerfTestThreads, RunPerfModes) {
 
 namespace {
 
-const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, TsibarevaEIntegralCalculateTrapezoidMethodSEQ>(
+const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<Integral, TsibarevaEIntegralCalculateTrapezoidMethodSEQ>(
     PPC_SETTINGS_tsibareva_e_integral_calculate_trapezoid_method);
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);

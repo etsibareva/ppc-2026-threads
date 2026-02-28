@@ -20,77 +20,77 @@ enum class IntegralTestType : std::uint8_t {
   kInvalidEmptyBounds,
 };
 
-struct IntegralInput {
-  std::vector<double> lower_bounds;
-  std::vector<double> upper_bounds;
-  std::vector<int> num_steps;
-  std::function<double(const std::vector<double> &)> function;
-  int dimension{0};
+struct Integral {
+    std::vector<double> lo;
+    std::vector<double> hi;
+    std::vector<int> steps;
+    std::function<double(const std::vector<double>&)> f;
+    int dim{0};
 };
 
-using InType = IntegralInput;
+using InType = Integral;
 using OutType = double;
 using TestType = std::tuple<IntegralTestType, std::string>;
 using BaseTask = ppc::task::Task<InType, OutType>;
 
-inline IntegralInput GenerateIntegralInput(IntegralTestType type) {
-  IntegralInput input;
+inline Integral GenerateIntegralInput(IntegralTestType type) {
+  Integral input;
 
   switch (type) {
     case IntegralTestType::kSuccessSimple2D: {
-      input.dimension = 2;
-      input.lower_bounds = {0.0, 0.0};
-      input.upper_bounds = {1.0, 1.0};
-      input.num_steps = {100, 100};
-      input.function = [](const std::vector<double> &x) { return (x[0] * x[0]) + (x[1] * x[1]); };
+      input.dim = 2;
+      input.lo = {0.0, 0.0};
+      input.hi = {1.0, 1.0};
+      input.steps = {100, 100};
+      input.f = [](const std::vector<double> &x) { return (x[0] * x[0]) + (x[1] * x[1]); }; // x^2 + y^2
       break;
     }
     case IntegralTestType::kSuccessConstant2D: {
-      input.dimension = 2;
-      input.lower_bounds = {0.0, 0.0};
-      input.upper_bounds = {2.0, 3.0};
-      input.num_steps = {50, 50};
-      input.function = [](const std::vector<double> &) { return 5.0; };
+      input.dim = 2;
+      input.lo = {0.0, 0.0};
+      input.hi = {2.0, 3.0};
+      input.steps = {50, 50};
+      input.f = [](const std::vector<double> &) { return 5.0; }; // const
       break;
     }
     case IntegralTestType::kSuccessSimple3D: {
-      input.dimension = 3;
-      input.lower_bounds = {0.0, 0.0, 0.0};
-      input.upper_bounds = {1.0, 1.0, 1.0};
-      input.num_steps = {50, 50, 50};
-      input.function = [](const std::vector<double> &x) { return x[0] + x[1] + x[2]; };
+      input.dim = 3;
+      input.lo = {0.0, 0.0, 0.0};
+      input.hi = {1.0, 1.0, 1.0};
+      input.steps = {50, 50, 50};
+      input.f = [](const std::vector<double> &x) { return x[0] + x[1] + x[2]; }; // x + y + z
       break;
     }
     case IntegralTestType::kSuccessConstant3D: {
-      input.dimension = 3;
-      input.lower_bounds = {0.0, 0.0, 0.0};
-      input.upper_bounds = {2.0, 2.0, 2.0};
-      input.num_steps = {40, 40, 40};
-      input.function = [](const std::vector<double> &) { return 3.0; };
+      input.dim = 3;
+      input.lo = {0.0, 0.0, 0.0};
+      input.hi = {2.0, 2.0, 2.0};
+      input.steps = {40, 40, 40};
+      input.f = [](const std::vector<double> &) { return 3.0; };
       break;
     }
     case IntegralTestType::kInvalidLowerBoundEqual: {
-      input.dimension = 2;
-      input.lower_bounds = {1.0, 0.0};
-      input.upper_bounds = {1.0, 1.0};
-      input.num_steps = {10, 10};
-      input.function = [](const std::vector<double> &x) { return x[0]; };
+      input.dim = 2;
+      input.lo = {1.0, 0.0};
+      input.hi = {1.0, 1.0};
+      input.steps = {10, 10};
+      input.f = [](const std::vector<double> &x) { return x[0]; };
       break;
     }
     case IntegralTestType::kInvalidStepsNegative: {
-      input.dimension = 2;
-      input.lower_bounds = {0.0, 0.0};
-      input.upper_bounds = {1.0, 1.0};
-      input.num_steps = {-5, 10};
-      input.function = [](const std::vector<double> &x) { return x[0]; };
+      input.dim = 2;
+      input.lo = {0.0, 0.0};
+      input.hi = {1.0, 1.0};
+      input.steps = {-5, 10};
+      input.f = [](const std::vector<double> &x) { return x[0]; };
       break;
     }
     case IntegralTestType::kInvalidEmptyBounds: {
-      input.dimension = 0;
-      input.lower_bounds = {};
-      input.upper_bounds = {};
-      input.num_steps = {};
-      input.function = [](const std::vector<double> &) { return 0.0; };
+      input.dim = 0;
+      input.lo = {};
+      input.hi = {};
+      input.steps = {};
+      input.f = [](const std::vector<double> &) { return 0.0; };
       break;
     }
   }
