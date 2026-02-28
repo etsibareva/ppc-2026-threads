@@ -48,7 +48,7 @@ TEST_P(TsibarevaERunFuncTestsThreads, IntegralCalculation) {
 }
 
 const std::array<TestType, 7> kTestParams = {
-    std::make_tuple(IntegralTestType::SUCCESS_SIMPLE_2D, "2_simple"),
+    std::make_tuple(IntegralTestType::SUCCESS_SIMPLE_2D, "2d_simple"),
     std::make_tuple(IntegralTestType::SUCCESS_CONSTANT_2D, "2d_constant"),
     std::make_tuple(IntegralTestType::SUCCESS_SIMPLE_3D, "3d_simple"),
     std::make_tuple(IntegralTestType::SUCCESS_CONSTANT_3D, "3d_constant"),
