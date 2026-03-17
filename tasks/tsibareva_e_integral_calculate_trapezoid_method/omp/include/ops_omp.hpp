@@ -16,7 +16,7 @@ class TsibarevaEIntegralCalculateTrapezoidMethodOMP : public BaseTask {
   bool ValidationImpl() override;
   bool PreProcessingImpl() override;
   bool RunImpl() override;
-  
+
   bool PostProcessingImpl() override;
 };
 

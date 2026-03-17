@@ -49,5 +49,4 @@ INSTANTIATE_TEST_SUITE_P(RunModeTests, TsibarevaERunPerfTestThreads, kGtestValue
 
 }  // namespace
 
-
 }  // namespace tsibareva_e_integral_calculate_trapezoid_method

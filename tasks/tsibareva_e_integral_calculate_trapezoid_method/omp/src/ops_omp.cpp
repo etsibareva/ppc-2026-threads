@@ -55,7 +55,6 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodOMP::RunImpl() {
 
       std::vector<double> point(dim);
       for (int i = 0; i < dim; ++i) {
-        
         point[i] = GetInput().lo[i] + (indexes[i] * h[i]);
       }
 

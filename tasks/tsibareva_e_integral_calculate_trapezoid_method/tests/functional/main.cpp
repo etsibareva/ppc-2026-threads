@@ -66,7 +66,6 @@ const auto kTestTasksList =
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 
-
 const auto kPerfTestName = TsibarevaERunFuncTestsThreads::PrintFuncTestName<TsibarevaERunFuncTestsThreads>;
 
 INSTANTIATE_TEST_SUITE_P(IntegralCalculation, TsibarevaERunFuncTestsThreads, kGtestValues, kPerfTestName);
