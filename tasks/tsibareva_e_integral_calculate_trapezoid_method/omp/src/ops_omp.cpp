@@ -36,16 +36,16 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodOMP::RunImpl() {
   }
 
   std::vector<std::vector<double>> dim_weights(dim);
-  for (int d = 0; d < dim; ++d) {
-    dim_weights[d].resize(sizes[d]);
-    for (int i = 0; i < sizes[d]; ++i) {
-      dim_weights[d][i] = (i == 0 || i == GetInput().steps[d]) ? 0.5 : 1.0;
+  for (int dim_idx = 0; dim_idx < dim; ++dim_idx) {
+    dim_weights[dim_idx].resize(sizes[dim_idx]);
+    for (int i = 0; i < sizes[dim_idx]; ++i) {
+      dim_weights[dim_idx][i] = (i == 0 || i == GetInput().steps[dim_idx]) ? 0.5 : 1.0;
     }
   }
 
   double global_sum = 0.0;
 
-#pragma omp parallel
+#pragma omp parallel default(none) shared(global_sum, dim, h, sizes, total_nodes, dim_weights, GetInput)
   {
     double local_sum = 0.0;
     std::vector<int> indexes(dim);
