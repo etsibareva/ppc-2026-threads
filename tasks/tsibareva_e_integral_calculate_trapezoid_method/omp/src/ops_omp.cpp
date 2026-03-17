@@ -45,7 +45,7 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodOMP::RunImpl() {
 
   double global_sum = 0.0;
 
-#pragma omp parallel default(none) shared(global_sum, dim, h, sizes, total_nodes, dim_weights, GetInput)
+#pragma omp parallel default(none) shared(global_sum, dim, h, sizes, total_nodes, dim_weights)
   {
     double local_sum = 0.0;
     std::vector<int> indexes(dim);
