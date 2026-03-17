@@ -16,6 +16,7 @@ TsibarevaEIntegralCalculateTrapezoidMethodSEQ::TsibarevaEIntegralCalculateTrapez
 }
 
 bool TsibarevaEIntegralCalculateTrapezoidMethodSEQ::ValidationImpl() {
+  
   return true;
 }
 

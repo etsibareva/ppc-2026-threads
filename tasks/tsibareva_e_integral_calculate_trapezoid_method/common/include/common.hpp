@@ -36,6 +36,7 @@ using BaseTask = ppc::task::Task<InType, OutType>;
 inline Integral GenerateIntegralInput(IntegralTestType type) {
   Integral input;
 
+  
   switch (type) {
     case IntegralTestType::kSuccessSimple2D: {
       input.dim = 2;
