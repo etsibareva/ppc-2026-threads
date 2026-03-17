@@ -1,8 +1,9 @@
 #include "tsibareva_e_integral_calculate_trapezoid_method/omp/include/ops_omp.hpp"
-#include "tsibareva_e_integral_calculate_trapezoid_method/common/include/common.hpp"
 
 #include <cmath>
 #include <vector>
+
+#include "tsibareva_e_integral_calculate_trapezoid_method/common/include/common.hpp"
 
 namespace tsibareva_e_integral_calculate_trapezoid_method {
 
@@ -39,11 +40,11 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodOMP::RunImpl() {
 
   double global_sum = 0.0;
 
-  #pragma omp parallel
+#pragma omp parallel
   {
     double local_sum = 0.0;
 
-    #pragma omp for
+#pragma omp for
     for (int node = 0; node < total_nodes; ++node) {
       std::vector<int> indexes(dim);
       int remainder = node;
@@ -68,7 +69,7 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodOMP::RunImpl() {
       local_sum += weight * GetInput().f(point);
     }
 
-    #pragma omp atomic
+#pragma omp atomic
     global_sum += local_sum;
   }
 
