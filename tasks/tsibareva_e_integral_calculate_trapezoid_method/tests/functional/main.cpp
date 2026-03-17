@@ -8,6 +8,7 @@
 
 #include "tsibareva_e_integral_calculate_trapezoid_method/common/include/common.hpp"
 #include "tsibareva_e_integral_calculate_trapezoid_method/seq/include/ops_seq.hpp"
+#include "tsibareva_e_integral_calculate_trapezoid_method/omp/include/ops_omp.hpp"
 #include "util/include/func_test_util.hpp"
 #include "util/include/util.hpp"
 
@@ -59,6 +60,8 @@ const std::array<TestType, 7> kTestParams = {
 
 const auto kTestTasksList =
     std::tuple_cat(ppc::util::AddFuncTask<TsibarevaEIntegralCalculateTrapezoidMethodSEQ, InType>(
+        kTestParams, PPC_SETTINGS_tsibareva_e_integral_calculate_trapezoid_method),
+      ppc::util::AddFuncTask<TsibarevaEIntegralCalculateTrapezoidMethodOMP, InType>(
         kTestParams, PPC_SETTINGS_tsibareva_e_integral_calculate_trapezoid_method));
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
