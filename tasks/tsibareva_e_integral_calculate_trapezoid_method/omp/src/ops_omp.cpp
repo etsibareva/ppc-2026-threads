@@ -37,7 +37,7 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodOMP::RunImpl() {
 
   double global_sum = 0.0;
 
-#pragma omp parallel for reduction(+ : global_sum)
+#pragma omp parallel for default(none) shared(dim, h, sizes, total_nodes) reduction(+ : global_sum)
   for (int node = 0; node < total_nodes; ++node) {
     int remainder = node;
     double node_weight = 1.0;
@@ -51,7 +51,7 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodOMP::RunImpl() {
         node_weight *= 0.5;
       }
 
-      point[i] = GetInput().lo[i] + idx * h[i];
+      point[i] = GetInput().lo[i] + (idx * h[i]);
     }
 
     global_sum += node_weight * GetInput().f(point);
