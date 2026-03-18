@@ -35,50 +35,33 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodOMP::RunImpl() {
     total_nodes *= sizes[i];
   }
 
-  std::vector<std::vector<double>> dim_weights(dim);
-  for (int dim_idx = 0; dim_idx < dim; ++dim_idx) {
-    dim_weights[dim_idx].resize(sizes[dim_idx]);
-    for (int i = 0; i < sizes[dim_idx]; ++i) {
-      dim_weights[dim_idx][i] = (i == 0 || i == GetInput().steps[dim_idx]) ? 0.5 : 1.0;
-    }
-  }
-
   double global_sum = 0.0;
 
-#pragma omp parallel default(none) shared(global_sum, dim, h, sizes, total_nodes, dim_weights)
-  {
-    double local_sum = 0.0;
-    std::vector<int> indexes(dim);
+#pragma omp parallel for reduction(+ : global_sum)
+  for (int node = 0; node < total_nodes; ++node) {
+    int remainder = node;
+    double node_weight = 1.0;
+    std::vector<double> point(dim);
 
-#pragma omp for
-    for (int node = 0; node < total_nodes; ++node) {
-      int remainder = node;
-      double node_weight = 1.0;
-      for (int i = dim - 1; i >= 0; --i) {
-        indexes[i] = remainder % sizes[i];
-        remainder /= sizes[i];
-        node_weight *= dim_weights[i][indexes[i]];
+    for (int i = dim - 1; i >= 0; --i) {
+      int idx = remainder % sizes[i];
+      remainder /= sizes[i];
+
+      if (idx == 0 || idx == GetInput().steps[i]) {
+        node_weight *= 0.5;
       }
 
-      std::vector<double> point(dim);
-      for (int i = 0; i < dim; ++i) {
-        point[i] = GetInput().lo[i] + (indexes[i] * h[i]);
-      }
-
-      local_sum += node_weight * GetInput().f(point);
+      point[i] = GetInput().lo[i] + idx * h[i];
     }
 
-#pragma omp atomic
-    global_sum += local_sum;
+    global_sum += node_weight * GetInput().f(point);
   }
 
   double res_h = 1.0;
   for (int i = 0; i < dim; ++i) {
     res_h *= h[i];
   }
-
   GetOutput() = global_sum * res_h;
-
   return true;
 }
 
