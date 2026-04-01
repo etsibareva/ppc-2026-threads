@@ -1,12 +1,13 @@
 // ops_tbb.cpp
 #include "tsibareva_e_integral_calculate_trapezoid_method/tbb/include/ops_tbb.hpp"
 
+#include <tbb/blocked_range.h>
+#include <tbb/parallel_reduce.h>
+
 #include <cmath>
 #include <vector>
 
 #include "tsibareva_e_integral_calculate_trapezoid_method/common/include/common.hpp"
-#include <tbb/parallel_reduce.h>
-#include <tbb/blocked_range.h>
 
 namespace tsibareva_e_integral_calculate_trapezoid_method {
 
@@ -27,7 +28,7 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodTBB::PreProcessingImpl() {
 }
 
 bool TsibarevaEIntegralCalculateTrapezoidMethodTBB::RunImpl() {
-  const Integral& input = GetInput();
+  const Integral &input = GetInput();
   int dim = input.dim;
 
   std::vector<double> h(dim);
@@ -39,14 +40,10 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodTBB::RunImpl() {
     total_nodes *= sizes[i];
   }
 
-  double total_sum = tbb::parallel_reduce(
-      tbb::blocked_range<int>(0, total_nodes),
-      0.0,
-      [&](const tbb::blocked_range<int>& r, double local_sum) {
-        return local_sum + ComputeRangeSum(r, 0.0, input, h, sizes);
-      },
-      std::plus<double>()
-  );
+  double total_sum = tbb::parallel_reduce(tbb::blocked_range<int>(0, total_nodes), 0.0,
+                                          [&](const tbb::blocked_range<int> &r, double local_sum) {
+    return local_sum + ComputeRangeSum(r, 0.0, input, h, sizes);
+  }, std::plus<double>());
 
   double res_h = 1.0;
   for (int i = 0; i < dim; ++i) {
@@ -60,12 +57,10 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodTBB::PostProcessingImpl() {
   return true;
 }
 
-double TsibarevaEIntegralCalculateTrapezoidMethodTBB::ComputeRangeSum(
-    const tbb::blocked_range<int>& range,
-    double init,
-    const Integral& input,
-    const std::vector<double>& h,
-    const std::vector<int>& sizes) {
+double TsibarevaEIntegralCalculateTrapezoidMethodTBB::ComputeRangeSum(const tbb::blocked_range<int> &range, double init,
+                                                                      const Integral &input,
+                                                                      const std::vector<double> &h,
+                                                                      const std::vector<int> &sizes) {
   double sum = init;
   int dim = input.dim;
 
