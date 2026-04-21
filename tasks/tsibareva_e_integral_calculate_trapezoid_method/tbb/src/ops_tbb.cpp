@@ -7,6 +7,8 @@
 #include <cmath>
 #include <vector>
 
+#include <functional>
+
 #include "tsibareva_e_integral_calculate_trapezoid_method/common/include/common.hpp"
 
 namespace tsibareva_e_integral_calculate_trapezoid_method {
@@ -43,7 +45,7 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodTBB::RunImpl() {
   double total_sum = tbb::parallel_reduce(tbb::blocked_range<int>(0, total_nodes), 0.0,
                                           [&](const tbb::blocked_range<int> &r, double local_sum) {
     return local_sum + ComputeRangeSum(r, 0.0, input, h, sizes);
-  }, std::plus<double>());
+  }, std::plus<>());
 
   double res_h = 1.0;
   for (int i = 0; i < dim; ++i) {
