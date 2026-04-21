@@ -23,7 +23,7 @@ class TsibarevaEIntegralCalculateTrapezoidMethodTBB : public BaseTask {
   bool RunImpl() override;
   bool PostProcessingImpl() override;
 
-  static double ComputeRangeSum(const tbb::blocked_range<int> &range, double init, const Integral &input,
+  static double ComputeSumNode(const tbb::blocked_range<int> &range, double init, const Integral &input,
                                 const std::vector<double> &h, const std::vector<int> &sizes);
 };
 

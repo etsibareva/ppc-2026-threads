@@ -29,28 +29,28 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodTBB::PreProcessingImpl() {
 }
 
 bool TsibarevaEIntegralCalculateTrapezoidMethodTBB::RunImpl() {
-  const Integral &input = GetInput();
-  int dim = input.dim;
+  const Integral &inputI = GetInput();
+  int dim = inputI.dim;
 
   std::vector<double> h(dim);
   std::vector<int> sizes(dim);
   int total_nodes = 1;
   for (int i = 0; i < dim; ++i) {
-    h[i] = (input.hi[i] - input.lo[i]) / input.steps[i];
-    sizes[i] = input.steps[i] + 1;
+    h[i] = (inputI.hi[i] - inputI.lo[i]) / inputI.steps[i];
+    sizes[i] = inputI.steps[i] + 1;
     total_nodes *= sizes[i];
   }
 
-  double total_sum = tbb::parallel_reduce(tbb::blocked_range<int>(0, total_nodes), 0.0,
+  double res_sum = tbb::parallel_reduce(tbb::blocked_range<int>(0, total_nodes), 0.0,
                                           [&](const tbb::blocked_range<int> &r, double local_sum) {
-    return local_sum + ComputeRangeSum(r, 0.0, input, h, sizes);
+    return local_sum + ComputeSumNode(r, 0.0, inputI, h, sizes);
   }, std::plus<>());
 
   double res_h = 1.0;
   for (int i = 0; i < dim; ++i) {
     res_h *= h[i];
   }
-  GetOutput() = total_sum * res_h;
+  GetOutput() = res_sum * res_h;
   return true;
 }
 
@@ -58,30 +58,30 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodTBB::PostProcessingImpl() {
   return true;
 }
 
-double TsibarevaEIntegralCalculateTrapezoidMethodTBB::ComputeRangeSum(const tbb::blocked_range<int> &range, double init,
-                                                                      const Integral &input,
+double TsibarevaEIntegralCalculateTrapezoidMethodTBB::ComputeSumNode(const tbb::blocked_range<int> &range, double init,
+                                                                      const Integral &inputI,
                                                                       const std::vector<double> &h,
                                                                       const std::vector<int> &sizes) {
   double sum = init;
-  int dim = input.dim;
+  int dim = inputI.dim;
 
   for (int node = range.begin(); node != range.end(); ++node) {
-    int remainder = node;
-    double node_weight = 1.0;
+    int rem = node;
+    double node_w = 1.0;
     std::vector<double> point(dim);
 
     for (int i = dim - 1; i >= 0; --i) {
-      int idx = remainder % sizes[i];
-      remainder /= sizes[i];
+      int idx = rem % sizes[i];
+      rem /= sizes[i];
 
-      if (idx == 0 || idx == input.steps[i]) {
-        node_weight *= 0.5;
+      if (idx == 0 || idx == inputI.steps[i]) {
+        node_w *= 0.5;
       }
 
-      point[i] = input.lo[i] + (idx * h[i]);
+      point[i] = inputI.lo[i] + (idx * h[i]);
     }
 
-    sum += node_weight * input.f(point);
+    sum += node_w * inputI.f(point);
   }
 
   return sum;
