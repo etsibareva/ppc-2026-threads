@@ -5,9 +5,8 @@
 #include <tbb/parallel_reduce.h>
 
 #include <cmath>
-#include <vector>
-
 #include <functional>
+#include <vector>
 
 #include "tsibareva_e_integral_calculate_trapezoid_method/common/include/common.hpp"
 
