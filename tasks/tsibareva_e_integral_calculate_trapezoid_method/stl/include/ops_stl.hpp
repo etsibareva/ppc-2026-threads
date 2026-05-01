@@ -20,9 +20,8 @@ class TsibarevaEIntegralCalculateTrapezoidMethodSTL : public BaseTask {
   bool PreProcessingImpl() override;
   bool RunImpl() override;
   bool PostProcessingImpl() override;
-  static void MWork(int thread_id, int start, int end, const std::vector<int> &sizes, const std::vector<double> &h,
-                    std::vector<double> &partial_sums, int dim, const std::vector<int> &steps,
-                    const std::vector<double> &lo, const std::function<double(const std::vector<double> &)> &f);
+  void MWork(int thread_id, int start, int end, const std::vector<int>& sizes, const std::vector<double>& h,
+                    std::vector<double>& partial_sums, int dim);
 };
 
 }  // namespace tsibareva_e_integral_calculate_trapezoid_method

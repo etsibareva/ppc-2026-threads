@@ -1,7 +1,6 @@
 #include "tsibareva_e_integral_calculate_trapezoid_method/stl/include/ops_stl.hpp"
 
 #include <cmath>
-#include <functional>
 #include <thread>
 #include <vector>
 
@@ -42,12 +41,8 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodSTL::RunImpl() {
   std::vector<std::thread> threads(num_threads);
   std::vector<double> partial_sums(num_threads, 0.0);
 
-  const auto &steps = GetInput().steps;
-  const auto &lo = GetInput().lo;
-  const auto &f = GetInput().f;
-
   auto worker = [&](int thread_id, int start, int end) {
-    MWork(thread_id, start, end, sizes, h, partial_sums, dim, steps, lo, f);
+    MWork(thread_id, start, end, sizes, h, partial_sums, dim);
   };
 
   int nodes_per_thread = total_nodes / num_threads;
@@ -82,10 +77,8 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodSTL::PostProcessingImpl() {
 }
 
 void TsibarevaEIntegralCalculateTrapezoidMethodSTL::MWork(int thread_id, int start, int end,
-                                                          const std::vector<int> &sizes, const std::vector<double> &h,
-                                                          std::vector<double> &partial_sums, int dim,
-                                                          const std::vector<int> &steps, const std::vector<double> &lo,
-                                                          const std::function<double(const std::vector<double> &)> &f) {
+                                                          const std::vector<int>& sizes, const std::vector<double>& h,
+                                                          std::vector<double>& partial_sums, int dim) {
   double local_sum = 0.0;
   std::vector<double> point(dim);
 
@@ -97,14 +90,14 @@ void TsibarevaEIntegralCalculateTrapezoidMethodSTL::MWork(int thread_id, int sta
       int idx = remainder % sizes[i];
       remainder /= sizes[i];
 
-      if (idx == 0 || idx == steps[i]) {
+      if (idx == 0 || idx == GetInput().steps[i]) {
         node_weight *= 0.5;
       }
 
-      point[i] = lo[i] + (idx * h[i]);
+      point[i] = GetInput().lo[i] + (idx * h[i]);
     }
 
-    local_sum += node_weight * f(point);
+    local_sum += node_weight * GetInput().f(point);
   }
   partial_sums[thread_id] = local_sum;
 }
