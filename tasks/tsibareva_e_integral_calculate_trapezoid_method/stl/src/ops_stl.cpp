@@ -3,6 +3,7 @@
 #include <cmath>
 #include <thread>
 #include <vector>
+#include <functional>
 
 #include "tsibareva_e_integral_calculate_trapezoid_method/common/include/common.hpp"
 #include "util/include/util.hpp"
