@@ -41,9 +41,7 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodSTL::RunImpl() {
   std::vector<std::thread> threads(num_threads);
   std::vector<double> partial_sums(num_threads, 0.0);
 
-  auto worker = [&](int thread_id, int start, int end) {
-    MWork(thread_id, start, end, sizes, h, partial_sums, dim);
-  };
+  auto worker = [&](int thread_id, int start, int end) { MWork(thread_id, start, end, sizes, h, partial_sums, dim); };
 
   int nodes_per_thread = total_nodes / num_threads;
   int remainder_nodes = total_nodes % num_threads;
@@ -77,8 +75,8 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodSTL::PostProcessingImpl() {
 }
 
 void TsibarevaEIntegralCalculateTrapezoidMethodSTL::MWork(int thread_id, int start, int end,
-                                                          const std::vector<int>& sizes, const std::vector<double>& h,
-                                                          std::vector<double>& partial_sums, int dim) {
+                                                          const std::vector<int> &sizes, const std::vector<double> &h,
+                                                          std::vector<double> &partial_sums, int dim) {
   double local_sum = 0.0;
   std::vector<double> point(dim);
 
