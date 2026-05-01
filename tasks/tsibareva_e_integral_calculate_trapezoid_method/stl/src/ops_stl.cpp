@@ -78,11 +78,11 @@ void TsibarevaEIntegralCalculateTrapezoidMethodSTL::MWork(int thread_id, int sta
                                                           const std::vector<int> &sizes, const std::vector<double> &h,
                                                           std::vector<double> &partial_sums, int dim) {
   double local_sum = 0.0;
-  std::vector<double> point(dim);
 
   for (int node = start; node < end; ++node) {
     int remainder = node;
     double node_weight = 1.0;
+    std::vector<double> point(dim);
 
     for (int i = dim - 1; i >= 0; --i) {
       int idx = remainder % sizes[i];
