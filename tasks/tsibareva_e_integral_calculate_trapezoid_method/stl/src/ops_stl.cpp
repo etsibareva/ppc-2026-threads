@@ -1,5 +1,6 @@
 #include "tsibareva_e_integral_calculate_trapezoid_method/stl/include/ops_stl.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <thread>
 #include <vector>
@@ -37,7 +38,7 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodSTL::RunImpl() {
     total_nodes *= sizes[i];
   }
 
-  const int num_threads = ppc::util::GetNumThreads();
+  const int num_threads = std::max<int>(1, std::min<int>(ppc::util::GetNumThreads(), total_nodes));
   std::vector<std::thread> threads(num_threads);
   std::vector<double> partial_sums(num_threads, 0.0);
 
