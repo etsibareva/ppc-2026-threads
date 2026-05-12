@@ -63,7 +63,8 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodALL::RunImpl() {
   int dim = GetInput().dim;
 
   MPI_Bcast(&dim, 1, MPI_INT, 0, MPI_COMM_WORLD);
-  std::vector<double> lo_vec(dim), hi_vec(dim);
+  std::vector<double> lo_vec(dim);
+  std::vector<double> hi_vec(dim);
   std::vector<int> steps_vec(dim);
   if (rank == 0) {
     lo_vec = lo;
@@ -83,7 +84,8 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodALL::RunImpl() {
     total_nodes *= sizes[i];
   }
 
-  std::vector<int> all_starts(size), all_ends(size);
+  std::vector<int> all_starts(size);
+  std::vector<int> all_ends(size);
   if (rank == 0) {
     int nodes_per_proc = total_nodes / size;
     int remainder = total_nodes % size;
@@ -96,7 +98,8 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodALL::RunImpl() {
     }
   }
 
-  int my_start = 0, my_end = 0;
+  int my_start = 0;
+  int my_end = 0;
   MPI_Scatter(all_starts.data(), 1, MPI_INT, &my_start, 1, MPI_INT, 0, MPI_COMM_WORLD);
   MPI_Scatter(all_ends.data(), 1, MPI_INT, &my_end, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
