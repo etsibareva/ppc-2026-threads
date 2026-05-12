@@ -31,13 +31,18 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodALL::RunImpl() {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
+  const auto &lo = GetInput().lo;
+  const auto &hi = GetInput().hi;
+  const auto &steps = GetInput().steps;
+  const auto &f = GetInput().f;
   int dim = GetInput().dim;
+
   std::vector<double> h(dim);
   std::vector<int> sizes(dim);
   int total_nodes = 1;
   for (int i = 0; i < dim; ++i) {
-    h[i] = (GetInput().hi[i] - GetInput().lo[i]) / GetInput().steps[i];
-    sizes[i] = GetInput().steps[i] + 1;
+    h[i] = (hi[i] - lo[i]) / steps[i];
+    sizes[i] = steps[i] + 1;
     total_nodes *= sizes[i];
   }
 
@@ -48,24 +53,23 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodALL::RunImpl() {
 
   double local_sum = 0.0;
 
-  const auto &lo = GetInput().lo;
-  const auto &steps = GetInput().steps;
-  const auto &f = GetInput().f;
-
-#pragma omp parallel for default(none) shared(dim, h, sizes, lo, steps, f, start, end) reduction(+ : local_sum)
-  for (int node = start; node < end; ++node) {
-    int remainder_idx = node;
-    double node_weight = 1.0;
+#pragma omp parallel default(none) shared(dim, h, sizes, lo, steps, f, start, end) reduction(+ : local_sum)
+  {
     std::vector<double> point(dim);
-    for (int i = dim - 1; i >= 0; --i) {
-      int idx = remainder_idx % sizes[i];
-      remainder_idx /= sizes[i];
-      if (idx == 0 || idx == steps[i]) {
-        node_weight *= 0.5;
+#pragma omp for reduction(+ : local_sum)
+    for (int node = start; node < end; ++node) {
+      int remainder_idx = node;
+      double node_weight = 1.0;
+      for (int i = dim - 1; i >= 0; --i) {
+        int idx = remainder_idx % sizes[i];
+        remainder_idx /= sizes[i];
+        if (idx == 0 || idx == steps[i]) {
+          node_weight *= 0.5;
+        }
+        point[i] = lo[i] + idx * h[i];
       }
-      point[i] = lo[i] + (idx * h[i]);
+      local_sum += node_weight * f(point);
     }
-    local_sum += node_weight * f(point);
   }
 
   double global_sum = 0.0;
