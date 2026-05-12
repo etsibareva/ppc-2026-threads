@@ -25,6 +25,31 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodALL::PreProcessingImpl() {
   return true;
 }
 
+double TsibarevaEIntegralCalculateTrapezoidMethodALL::ComputePartialSum(
+    int begin, int finish, const std::vector<double> &lo, const std::vector<double> &h, const std::vector<int> &sizes,
+    const std::vector<int> &steps, int dim, const std::function<double(const std::vector<double> &)> &f) {
+  double partial = 0.0;
+#pragma omp parallel default(none) shared(begin, finish, dim, h, sizes, lo, steps, f) reduction(+ : partial)
+  {
+    std::vector<double> point(dim);
+#pragma omp for
+    for (int node = begin; node < finish; ++node) {
+      int remainder_idx = node;
+      double node_weight = 1.0;
+      for (int i = dim - 1; i >= 0; --i) {
+        int idx = remainder_idx % sizes[i];
+        remainder_idx /= sizes[i];
+        if (idx == 0 || idx == steps[i]) {
+          node_weight *= 0.5;
+        }
+        point[i] = lo[i] + (idx * h[i]);
+      }
+      partial += node_weight * f(point);
+    }
+  }
+  return partial;
+}
+
 bool TsibarevaEIntegralCalculateTrapezoidMethodALL::RunImpl() {
   int rank = 0;
   int size = 0;
@@ -41,7 +66,7 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodALL::RunImpl() {
   std::vector<int> sizes(dim);
   int total_nodes = 1;
   for (int i = 0; i < dim; ++i) {
-    h[i] = (hi[i] - lo[i]) / steps[i];
+    h[i] = (hi[i] - lo[i]) / static_cast<double>(steps[i]);
     sizes[i] = steps[i] + 1;
     total_nodes *= sizes[i];
   }
@@ -51,26 +76,7 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodALL::RunImpl() {
   int start = (rank * nodes_per_proc) + (rank < remainder ? rank : remainder);
   int end = start + nodes_per_proc + (rank < remainder ? 1 : 0);
 
-  double local_sum = 0.0;
-
-#pragma omp parallel default(none) shared(dim, h, sizes, lo, steps, f, start, end) reduction(+ : local_sum)
-  {
-    std::vector<double> point(dim);
-#pragma omp for reduction(+ : local_sum)
-    for (int node = start; node < end; ++node) {
-      int remainder_idx = node;
-      double node_weight = 1.0;
-      for (int i = dim - 1; i >= 0; --i) {
-        int idx = remainder_idx % sizes[i];
-        remainder_idx /= sizes[i];
-        if (idx == 0 || idx == steps[i]) {
-          node_weight *= 0.5;
-        }
-        point[i] = lo[i] + idx * h[i];
-      }
-      local_sum += node_weight * f(point);
-    }
-  }
+  double local_sum = ComputePartialSum(start, end, lo, h, sizes, steps, dim, f);
 
   double global_sum = 0.0;
   MPI_Reduce(&local_sum, &global_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);

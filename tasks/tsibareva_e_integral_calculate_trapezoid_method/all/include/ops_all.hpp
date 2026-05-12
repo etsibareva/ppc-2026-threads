@@ -17,6 +17,12 @@ class TsibarevaEIntegralCalculateTrapezoidMethodALL : public BaseTask {
   bool PreProcessingImpl() override;
   bool RunImpl() override;
   bool PostProcessingImpl() override;
+
+ private:
+ private:
+  static double ComputePartialSum(int begin, int finish, const std::vector<double> &lo, const std::vector<double> &h,
+                                  const std::vector<int> &sizes, const std::vector<int> &steps, int dim,
+                                  const std::function<double(const std::vector<double> &)> &f);
 };
 
 }  // namespace tsibareva_e_integral_calculate_trapezoid_method
