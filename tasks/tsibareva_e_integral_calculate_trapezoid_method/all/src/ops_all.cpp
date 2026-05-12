@@ -2,84 +2,85 @@
 
 #include <mpi.h>
 
-#include <atomic>
-#include <numeric>
-#include <thread>
+#include <cmath>
+#include <functional>
 #include <vector>
 
 #include "tsibareva_e_integral_calculate_trapezoid_method/common/include/common.hpp"
-#include "oneapi/tbb/parallel_for.h"
-#include "util/include/util.hpp"
 
 namespace tsibareva_e_integral_calculate_trapezoid_method {
 
 TsibarevaEIntegralCalculateTrapezoidMethodALL::TsibarevaEIntegralCalculateTrapezoidMethodALL(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
-  GetOutput() = 0;
+  GetOutput() = 0.0;
 }
 
 bool TsibarevaEIntegralCalculateTrapezoidMethodALL::ValidationImpl() {
-  return (GetInput() > 0) && (GetOutput() == 0);
+  return true;
 }
 
 bool TsibarevaEIntegralCalculateTrapezoidMethodALL::PreProcessingImpl() {
-  GetOutput() = 2 * GetInput();
-  return GetOutput() > 0;
+  GetOutput() = 0.0;
+  return true;
 }
 
 bool TsibarevaEIntegralCalculateTrapezoidMethodALL::RunImpl() {
-  for (InType i = 0; i < GetInput(); i++) {
-    for (InType j = 0; j < GetInput(); j++) {
-      for (InType k = 0; k < GetInput(); k++) {
-        std::vector<InType> tmp(i + j + k, 1);
-        GetOutput() += std::accumulate(tmp.begin(), tmp.end(), 0);
-        GetOutput() -= i + j + k;
+  int rank, size;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+  int dim = GetInput().dim;
+  std::vector<double> h(dim);
+  std::vector<int> sizes(dim);
+  int total_nodes = 1;
+  for (int i = 0; i < dim; ++i) {
+    h[i] = (GetInput().hi[i] - GetInput().lo[i]) / GetInput().steps[i];
+    sizes[i] = GetInput().steps[i] + 1;
+    total_nodes *= sizes[i];
+  }
+
+  int nodes_per_proc = total_nodes / size;
+  int remainder = total_nodes % size;
+  int start = rank * nodes_per_proc + (rank < remainder ? rank : remainder);
+  int end = start + nodes_per_proc + (rank < remainder ? 1 : 0);
+
+  double local_sum = 0.0;
+
+#pragma omp parallel for reduction(+ : local_sum)
+  for (int node = start; node < end; ++node) {
+    int remainder_idx = node;
+    double node_weight = 1.0;
+    std::vector<double> point(dim);
+    for (int i = dim - 1; i >= 0; --i) {
+      int idx = remainder_idx % sizes[i];
+      remainder_idx /= sizes[i];
+      if (idx == 0 || idx == GetInput().steps[i]) {
+        node_weight *= 0.5;
       }
+      point[i] = GetInput().lo[i] + idx * h[i];
     }
+    local_sum += node_weight * GetInput().f(point);
   }
 
-  const int num_threads = ppc::util::GetNumThreads();
-  {
-    GetOutput() *= num_threads;
+  double global_sum = 0.0;
+  MPI_Reduce(&local_sum, &global_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
-    int rank = -1;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    if (rank == 0) {
-      std::atomic<int> counter(0);
-#pragma omp parallel default(none) shared(counter) num_threads(ppc::util::GetNumThreads())
-      counter++;
-
-      GetOutput() /= counter;
-    } else {
-      GetOutput() /= num_threads;
+  if (rank == 0) {
+    double res_h = 1.0;
+    for (int i = 0; i < dim; ++i) {
+      res_h *= h[i];
     }
+    GetOutput() = global_sum * res_h;
   }
 
-  {
-    GetOutput() *= num_threads;
-    std::vector<std::thread> threads(num_threads);
-    std::atomic<int> counter(0);
-    for (int i = 0; i < num_threads; i++) {
-      threads[i] = std::thread([&]() { counter++; });
-      threads[i].join();
-    }
-    GetOutput() /= counter;
-  }
-
-  {
-    GetOutput() *= num_threads;
-    std::atomic<int> counter(0);
-    tbb::parallel_for(0, ppc::util::GetNumThreads(), [&](int /*i*/) { counter++; });
-    GetOutput() /= counter;
-  }
+  MPI_Bcast(&GetOutput(), 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
   MPI_Barrier(MPI_COMM_WORLD);
-  return GetOutput() > 0;
+  return true;
 }
 
 bool TsibarevaEIntegralCalculateTrapezoidMethodALL::PostProcessingImpl() {
-  GetOutput() -= GetInput();
-  return GetOutput() > 0;
+  return true;
 }
 
 }  // namespace tsibareva_e_integral_calculate_trapezoid_method
