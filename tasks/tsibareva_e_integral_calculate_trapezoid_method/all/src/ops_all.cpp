@@ -26,7 +26,8 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodALL::PreProcessingImpl() {
 }
 
 bool TsibarevaEIntegralCalculateTrapezoidMethodALL::RunImpl() {
-  int rank, size;
+  int rank = 0;
+  int size = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
@@ -42,12 +43,16 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodALL::RunImpl() {
 
   int nodes_per_proc = total_nodes / size;
   int remainder = total_nodes % size;
-  int start = rank * nodes_per_proc + (rank < remainder ? rank : remainder);
+  int start = (rank * nodes_per_proc) + (rank < remainder ? rank : remainder);
   int end = start + nodes_per_proc + (rank < remainder ? 1 : 0);
 
   double local_sum = 0.0;
 
-#pragma omp parallel for reduction(+ : local_sum)
+  const auto &lo = GetInput().lo;
+  const auto &steps = GetInput().steps;
+  const auto &f = GetInput().f;
+
+#pragma omp parallel for default(none) shared(dim, h, sizes, lo, steps, f, start, end) reduction(+ : local_sum)
   for (int node = start; node < end; ++node) {
     int remainder_idx = node;
     double node_weight = 1.0;
@@ -55,12 +60,12 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodALL::RunImpl() {
     for (int i = dim - 1; i >= 0; --i) {
       int idx = remainder_idx % sizes[i];
       remainder_idx /= sizes[i];
-      if (idx == 0 || idx == GetInput().steps[i]) {
+      if (idx == 0 || idx == steps[i]) {
         node_weight *= 0.5;
       }
-      point[i] = GetInput().lo[i] + idx * h[i];
+      point[i] = lo[i] + (idx * h[i]);
     }
-    local_sum += node_weight * GetInput().f(point);
+    local_sum += node_weight * f(point);
   }
 
   double global_sum = 0.0;
