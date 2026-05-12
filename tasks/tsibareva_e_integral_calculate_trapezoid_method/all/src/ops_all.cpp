@@ -62,21 +62,45 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodALL::RunImpl() {
   const auto &f = GetInput().f;
   int dim = GetInput().dim;
 
+  MPI_Bcast(&dim, 1, MPI_INT, 0, MPI_COMM_WORLD);
+  std::vector<double> lo_vec(dim), hi_vec(dim);
+  std::vector<int> steps_vec(dim);
+  if (rank == 0) {
+    lo_vec = lo;
+    hi_vec = hi;
+    steps_vec = steps;
+  }
+  MPI_Bcast(lo_vec.data(), dim, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+  MPI_Bcast(hi_vec.data(), dim, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+  MPI_Bcast(steps_vec.data(), dim, MPI_INT, 0, MPI_COMM_WORLD);
+
   std::vector<double> h(dim);
   std::vector<int> sizes(dim);
   int total_nodes = 1;
   for (int i = 0; i < dim; ++i) {
-    h[i] = (hi[i] - lo[i]) / static_cast<double>(steps[i]);
-    sizes[i] = steps[i] + 1;
+    h[i] = (hi_vec[i] - lo_vec[i]) / static_cast<double>(steps_vec[i]);
+    sizes[i] = steps_vec[i] + 1;
     total_nodes *= sizes[i];
   }
 
-  int nodes_per_proc = total_nodes / size;
-  int remainder = total_nodes % size;
-  int start = (rank * nodes_per_proc) + (rank < remainder ? rank : remainder);
-  int end = start + nodes_per_proc + (rank < remainder ? 1 : 0);
+  std::vector<int> all_starts(size), all_ends(size);
+  if (rank == 0) {
+    int nodes_per_proc = total_nodes / size;
+    int remainder = total_nodes % size;
+    int start = 0;
+    for (int i = 0; i < size; ++i) {
+      all_starts[i] = start;
+      int end = start + nodes_per_proc + (i < remainder ? 1 : 0);
+      all_ends[i] = end;
+      start = end;
+    }
+  }
 
-  double local_sum = ComputePartialSum(start, end, lo, h, sizes, steps, dim, f);
+  int my_start = 0, my_end = 0;
+  MPI_Scatter(all_starts.data(), 1, MPI_INT, &my_start, 1, MPI_INT, 0, MPI_COMM_WORLD);
+  MPI_Scatter(all_ends.data(), 1, MPI_INT, &my_end, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+  double local_sum = ComputePartialSum(my_start, my_end, lo_vec, h, sizes, steps_vec, dim, f);
 
   double global_sum = 0.0;
   MPI_Reduce(&local_sum, &global_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
@@ -89,12 +113,12 @@ bool TsibarevaEIntegralCalculateTrapezoidMethodALL::RunImpl() {
     GetOutput() = global_sum * res_h;
   }
 
-  MPI_Bcast(&GetOutput(), 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-  MPI_Barrier(MPI_COMM_WORLD);
   return true;
 }
 
 bool TsibarevaEIntegralCalculateTrapezoidMethodALL::PostProcessingImpl() {
+  MPI_Bcast(&GetOutput(), 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+  MPI_Barrier(MPI_COMM_WORLD);
   return true;
 }
 
