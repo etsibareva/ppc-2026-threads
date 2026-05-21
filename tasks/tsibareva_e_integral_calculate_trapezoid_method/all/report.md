@@ -188,9 +188,9 @@ MPI_Reduce(&local_sum, &global_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 - MPI-реализация: Microsoft MPI.
 - Сборка: Release, CMake.
 - Переменные окружения:
-    - `PPC_NUM_PROC` - число MPI-процессов.
-    - `PPC_NUM_THREADS` - число потоков OpenMP на процесс.
-    - `OMP_NUM_THREADS` - также задано равным `PPC_NUM_THREADS` для контроля OpenMP.
+  - `PPC_NUM_PROC` - число MPI-процессов.
+  - `PPC_NUM_THREADS` - число потоков OpenMP на процесс.
+  - `OMP_NUM_THREADS` - также задано равным `PPC_NUM_THREADS` для контроля OpenMP.
 - Команды запуска:
 
     ```bash
